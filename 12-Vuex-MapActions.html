@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Clases Vuex</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+    <script src="https://unpkg.com/vuex@3.1.2/dist/vuex.js"></script>
+
+
+</head>
+<body>
+
+    
+    <div id="app">
+        <div class="container">
+            <titulo></titulo>
+        </div>
+    </div>
+
+<script>
+    Vue.component('titulo',{
+        template:`
+            <div class=" container bg-primary p-2">
+               <h1>Número: {{numero}}</h1> 
+               <boton></boton>
+            </div>
+        `,
+
+        computed: {
+            ...Vuex.mapState(['numero'])
+        },
+    });
+    Vue.component('boton',{
+        template:`
+            <div class=" container bg-warning my-3 p-1">
+                <h1>Número: {{numero}}</h1>
+                <button @click="aumentar" class="btn btn-success">+</button>
+                <button @click="restar(1)" class="btn btn-danger">-</button>
+                <br/><br/>
+                <input v-model="$store.state.raza">
+                <select v-model="$store.state.raza">
+                   <option v-for="option in options">
+                        {{option}}
+                    </option>
+                    
+                </select>
+                <button @click="obtenerPerros" class="btn btn-dark mt-3">Obtener Perros</button>
+                <ul v-for="item of perros.slice(0,20)">
+                    <img class="img" width="70%" :src="item"></img>
+                </ul>
+            </div>
+        `,
+        computed: {
+            ...Vuex.mapState(['options','numero','cursos','perros',])
+        },
+
+        methods: {
+            ...Vuex.mapMutations(['aumentar','restar']),
+            ...Vuex.mapActions(['obtenerCursos','obtenerPerros'])
+        },
+    });
+
+
+    const store=new Vuex.Store({
+        state:{
+            numero:10,
+            cursos:[],
+            perros:[],
+            raza:"beagle",
+            options:["affenpinscher","african","airedale","akita","appenzeller","australian","basenji","beagle","bluetick","borzoi","bouvier","boxer","brabancon","briard","buhund","norwegian","bulldog","boston","english","french","bullterrier","cairn","cattledog","australian","chihuahua","chow","clumber","cockapoo","collie","border","coonhound","corgi","cardigan","cotondetulear","dachshund","dalmatian","dane","great","deerhound","scottish","dhole","dingo","doberman","elkhound","eskimo","frise","greyhound","italian","hound","afghan","basset","english","ibizan","walker","husky","keeshond","kelpie","komondor","labrador","leonberg","maltese","mastiff","bull","tibetan","mexicanhairless","mix","mountain","bernese","swiss","newfoundland","poodle","pug","puggle","golden","ridgeback","rottweiler","saluki","samoyed","schnauzer","giant","miniature","sheepdog","shiba","shihtzu","spaniel","cocker","terrier","bedlington","border","dandie","fox"]
+        },
+        mutations:{
+            aumentar(state){
+                state.numero++;
+            },
+            restar(state,n){
+                if(state.numero>0){
+                    state.numero -=n;
+                }
+                else{
+                    state.numero=0;
+                    alert("Solo numero positivos");
+                }
+            },
+            llenarCursos(state,cursosAccion){
+                state.cursos=cursosAccion
+            },
+            llenarPerros(state,perrosAccion){
+                state.perros=perrosAccion
+            },
+        },
+
+        actions:{
+            obtenerCursos: async function ({ commit }) {
+                const data=await fetch('cursos.json');
+                const cursos=await data.json();
+                commit('llenarCursos',cursos)
+               
+            },
+            obtenerPerros: async function ({commit}) {
+                const dogs=await fetch('https://dog.ceo/api/breed/'+store.state.raza+'/images');
+                const perros=await dogs.json();
+                commit('llenarPerros',perros['message'])
+            },
+        }
+    })
+
+
+
+    new Vue({
+        el:'#app',
+        store
+    });
+
+</script>
+</body>
+</html>
